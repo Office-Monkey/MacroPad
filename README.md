@@ -129,6 +129,24 @@ Find your device in Windows' Device Manager:
   - Disconnect the keypad and check which ones disappeared from the tree. Use this information to write a new line in the config file
 - For the ProtocolVersion your best bet would be `1` since most of these keypads are using that. If that doesn't work, try `0`.
 
+##### Finding via PowerShell
+
+If you're comfortable with using a console Window -- launch a PowerShell session. Unplug your device if it's currently plugged in.
+
+Run this command:
+
+```powershell
+$disconnectedDevices = Get-PnpDevice | where-object { $_.FriendlyName -contains "USB Input Device" } | where-object { $_.Present -eq "True" } | foreach-object -begin { $ht = @{} } -process { $ht[$_.HardwareID[0]] = $_.HardwareID[0]  } -end { $ht }
+```
+
+Plug in your device, **wait a few seconds** for the hardware to be recognized, then run this command in the same PowerShell terminal:
+
+```powershell
+Get-PnpDevice | where-object { $_.FriendlyName -contains "USB Input Device" } | where-object { $_.Present -eq "True" } | foreach-object { $_.HardwareID[0] } | ? { -not $disconnectedDevices.ContainsKey($_) }
+```
+
+The string will be of the form documented above.
+
 ### Bug reporting
 If you encounter any bugs, please consider creating a ticket in the issues serction on github or contact me via email.
 
